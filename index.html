@@ -81,7 +81,31 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
 /* corner deco */
 .cdeco{position:relative;height:0;overflow:visible;z-index:5;}
 
+/* LOCK SCREEN */
+#lockscreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a0a10;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.lock-box{background:#fff;border-radius:14px;padding:36px 32px 28px;width:320px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.45);}
+.lock-logo{margin-bottom:18px;}
+.lock-logo svg{display:block;margin:0 auto 8px;}
+.lock-brand{font-size:18px;font-weight:900;color:#6b1a2a;letter-spacing:.06em;line-height:1.1;}
+.lock-sub{font-size:8px;color:#aaa;letter-spacing:.12em;margin-top:2px;}
+.lock-title{font-size:13px;font-weight:700;color:#333;margin:18px 0 6px;}
+.lock-hint{font-size:10px;color:#aaa;margin-bottom:18px;}
+.lock-dots{display:flex;justify-content:center;gap:10px;margin-bottom:20px;}
+.lock-dot{width:14px;height:14px;border-radius:50%;background:#eee;border:2px solid #ddd;transition:background .15s;}
+.lock-dot.filled{background:#6b1a2a;border-color:#6b1a2a;}
+.lock-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.lock-key{padding:14px 0;font-size:18px;font-weight:700;border-radius:8px;border:1px solid #e0e0e0;background:#fafafa;color:#333;cursor:pointer;transition:background .1s;}
+.lock-key:hover{background:#f0e0e4;border-color:#6b1a2a;color:#6b1a2a;}
+.lock-key:active{background:#6b1a2a;color:#fff;}
+.lock-key.del{font-size:14px;color:#888;}
+.lock-err{font-size:11px;color:#c0392b;min-height:16px;margin-bottom:4px;font-weight:600;}
+.lock-attempts{font-size:10px;color:#bbb;}
+#mainapp{display:none;}
+
 @media print{
+  #lockscreen{display:none !important;}
+  #mainapp{display:block !important;}
+}
   body{background:#fff !important;padding:0 !important;}
   .sidebar{display:none !important;}
   h1{display:none !important;}
@@ -93,6 +117,55 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
 </style>
 </head>
 <body>
+
+<!-- LOCK SCREEN -->
+<div id="lockscreen">
+  <div class="lock-box">
+    <div class="lock-logo">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="24" fill="#6b1a2a"/>
+        <circle cx="26" cy="26" r="24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(0,26,26)"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(60,26,26)"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(120,26,26)"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(180,26,26)"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(240,26,26)"/>
+        <ellipse cx="26" cy="14" rx="5" ry="10.5" fill="rgba(255,255,255,0.13)" transform="rotate(300,26,26)"/>
+        <circle cx="26" cy="26" r="6" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="26" cy="26" r="3" fill="rgba(255,255,255,0.7)"/>
+      </svg>
+      <div class="lock-brand">ECSTASYS</div>
+      <div class="lock-sub">SUNRISE CONSULTANTS</div>
+    </div>
+    <div class="lock-title">&#128274; Enter Passcode</div>
+    <div class="lock-hint">Enter your 4-digit passcode to continue</div>
+    <div class="lock-dots">
+      <div class="lock-dot" id="dot0"></div>
+      <div class="lock-dot" id="dot1"></div>
+      <div class="lock-dot" id="dot2"></div>
+      <div class="lock-dot" id="dot3"></div>
+    </div>
+    <div class="lock-pad">
+      <button class="lock-key" onclick="keyPress('1')">1</button>
+      <button class="lock-key" onclick="keyPress('2')">2</button>
+      <button class="lock-key" onclick="keyPress('3')">3</button>
+      <button class="lock-key" onclick="keyPress('4')">4</button>
+      <button class="lock-key" onclick="keyPress('5')">5</button>
+      <button class="lock-key" onclick="keyPress('6')">6</button>
+      <button class="lock-key" onclick="keyPress('7')">7</button>
+      <button class="lock-key" onclick="keyPress('8')">8</button>
+      <button class="lock-key" onclick="keyPress('9')">9</button>
+      <button class="lock-key del" onclick="keyPress('C')">&#x232B;</button>
+      <button class="lock-key" onclick="keyPress('0')">0</button>
+      <button class="lock-key del" onclick="keyPress('X')">&#x2715;</button>
+    </div>
+    <div class="lock-err" id="lock-err"></div>
+    <div class="lock-attempts" id="lock-attempts"></div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until unlocked) -->
+<div id="mainapp">
 <h1>Ecstasys Sunrise Consultants &mdash; Invoice Generator</h1>
 <div class="app">
 
@@ -300,9 +373,79 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
 
 </div>
 </div>
-</div>
+</div><!-- /mainapp -->
 
 <script>
+/* ===================== PASSCODE LOCK =====================
+   Change the 4 digits below to set your own passcode.
+   Example: var PASSCODE = '9988'; sets passcode to 9988
+   ========================================================= */
+var PASSCODE = '1234';   /* <-- CHANGE THIS TO YOUR PASSCODE */
+var MAX_ATTEMPTS = 5;
+
+var entered = '';
+var attempts = 0;
+var locked = false;
+var lockTimer = null;
+
+function keyPress(k) {
+  if (locked) return;
+  if (k === 'C') {
+    entered = entered.slice(0, -1);
+  } else if (k === 'X') {
+    entered = '';
+  } else if (entered.length < 4) {
+    entered += k;
+  }
+  updateDots();
+  if (entered.length === 4) {
+    setTimeout(checkCode, 120);
+  }
+}
+
+function updateDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('dot' + i);
+    dot.className = 'lock-dot' + (i < entered.length ? ' filled' : '');
+  }
+}
+
+function checkCode() {
+  if (entered === PASSCODE) {
+    document.getElementById('lockscreen').style.display = 'none';
+    document.getElementById('mainapp').style.display = 'block';
+    upd();
+  } else {
+    attempts++;
+    var remaining = MAX_ATTEMPTS - attempts;
+    entered = '';
+    updateDots();
+    if (attempts >= MAX_ATTEMPTS) {
+      locked = true;
+      document.getElementById('lock-err').innerHTML = '&#10006; Too many attempts. Locked for 30 seconds.';
+      document.getElementById('lock-attempts').innerHTML = '';
+      lockTimer = setTimeout(function() {
+        locked = false;
+        attempts = 0;
+        document.getElementById('lock-err').innerHTML = '';
+        document.getElementById('lock-attempts').innerHTML = '';
+      }, 30000);
+    } else {
+      document.getElementById('lock-err').innerHTML = '&#10006; Wrong passcode';
+      document.getElementById('lock-attempts').innerHTML = remaining + ' attempt' + (remaining === 1 ? '' : 's') + ' remaining';
+      setTimeout(function(){ document.getElementById('lock-err').innerHTML = ''; }, 1800);
+    }
+  }
+}
+
+/* Allow keyboard number input on lock screen */
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('lockscreen').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') keyPress(e.key);
+  if (e.key === 'Backspace') keyPress('C');
+  if (e.key === 'Escape') keyPress('X');
+});
+/* ===================== END LOCK ===================== */
 var O=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
 var T=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
 function nw(n){
