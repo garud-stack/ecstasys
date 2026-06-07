@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecstasys Invoice Generator</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;background:#f0f0f0;min-height:100vh;padding:20px;}
+  h1{font-size:15px;font-weight:700;margin-bottom:14px;color:#333;text-align:center;letter-spacing:.04em;}
+
+  .app{display:flex;gap:22px;max-width:1120px;margin:0 auto;align-items:flex-start;}
+
+  /* SIDEBAR */
+  .sidebar{width:255px;flex-shrink:0;position:sticky;top:20px;}
+  .sc{background:#fff;border:1px solid #ddd;border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .sc h3{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.09em;margin-bottom:11px;display:flex;align-items:center;gap:5px;}
+  .fr{margin-bottom:9px;}
+  .fr label{display:block;font-size:11px;color:#555;margin-bottom:3px;font-weight:500;}
+  .fr input[type=text],.fr input[type=number],.fr input[type=date]{width:100%;font-size:12px;padding:5px 7px;border-radius:5px;border:1px solid #ccc;background:#fafafa;color:#222;outline:none;}
+  .fr input:focus{border-color:#6b1a2a;background:#fff;}
+  .ub{display:block;width:100%;padding:7px 8px;font-size:11px;border:1.5px dashed #ccc;border-radius:7px;background:#fafafa;color:#888;cursor:pointer;text-align:center;transition:all .15s;}
+  .ub:hover{border-color:#6b1a2a;color:#6b1a2a;background:#fff8f8;}
+  .up{width:100%;height:46px;object-fit:contain;border-radius:5px;margin-top:5px;border:1px solid #eee;display:none;background:#fafafa;}
+  .up-wide{height:36px;}
+  .clr{font-size:10px;color:#aaa;cursor:pointer;margin-top:2px;display:none;text-decoration:underline;}
+  .clr:hover{color:#6b1a2a;}
+  .hint{font-size:9.5px;color:#bbb;margin-top:3px;line-height:1.4;}
+
+  .pb{width:100%;padding:9px;font-size:12.5px;font-weight:600;border-radius:8px;border:none;cursor:pointer;margin-bottom:7px;transition:background .15s;}
+  .pb.print{background:#6b1a2a;color:#fff;}
+  .pb.print:hover{background:#8a2236;}
+  .note{font-size:9.5px;color:#aaa;text-align:center;line-height:1.55;}
+
+  /* INVOICE */
+  .inv-outer{flex:1;min-width:0;}
+  .inv{background:#fff;color:#111;font-family:Arial,sans-serif;box-shadow:0 2px 18px rgba(0,0,0,.13);width:100%;max-width:750px;margin:0 auto;}
+
+  /* --- HEADER ZONE --- */
+  /* Default SVG header shown when no image uploaded */
+  .inv-head-svg{background:#6b1a2a;position:relative;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 12px 16px;overflow:hidden;min-height:74px;}
+  .logo-area{display:flex;align-items:center;gap:11px;z-index:2;position:relative;}
+  /* Logo image replaces SVG icon + text */
+  .logo-img-el{height:54px;max-width:180px;object-fit:contain;display:none;}
+  .logo-svg-default{display:flex;align-items:center;gap:11px;}
+  .contact-right{color:#fff;text-align:right;font-size:9.5px;line-height:1.9;z-index:2;position:relative;}
+  .contact-right .lbl{opacity:.65;margin-right:2px;}
+  /* Full header image replaces entire header block */
+  .inv-head-img{display:none;width:100%;}
+  .inv-head-img img{width:100%;display:block;}
+
+  /* --- FOOTER ZONE --- */
+  /* Default SVG footer */
+  .inv-footer-svg{background:#6b1a2a;display:flex;justify-content:space-evenly;align-items:center;padding:9px 12px;font-size:8.5px;color:#fff;}
+  .inv-footer-svg span{display:flex;align-items:center;gap:5px;opacity:.92;}
+  .inv-bot-deco{background:#6b1a2a;height:22px;position:relative;overflow:hidden;}
+  /* Full footer image */
+  .inv-footer-img{display:none;width:100%;}
+  .inv-footer-img img{width:100%;display:block;}
+
+  .inv-redline{height:3px;background:#6b1a2a;}
+  .inv-body{padding:16px 18px;}
+  .inv-title-row{text-align:center;font-size:14px;font-weight:700;letter-spacing:.2em;padding:6px 0;border-bottom:2.5px solid #6b1a2a;margin-bottom:14px;}
+  .inv-main{display:flex;gap:12px;margin-bottom:14px;}
+  .inv-to{flex:1;font-size:9px;line-height:1.8;color:#333;}
+  .inv-to .to-head{font-weight:700;font-size:9.5px;color:#111;margin-bottom:3px;}
+  .inv-dtable{width:215px;flex-shrink:0;border-collapse:collapse;font-size:9px;}
+  .inv-dtable td{padding:3px 5px;border:.5px solid #bbb;vertical-align:top;}
+  .inv-dtable td:first-child{background:#f5f5f5;color:#555;font-weight:600;white-space:nowrap;width:88px;}
+  .inv-dtable td:last-child{font-weight:500;color:#111;}
+
+  .section-head{background:#f0f0f0;text-align:center;font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px;border:.5px solid #bbb;}
+  .bill-table{width:100%;border-collapse:collapse;font-size:10px;}
+  .bill-table th{background:#f5f5f5;border:.5px solid #bbb;padding:5px 8px;font-weight:700;text-align:left;}
+  .bill-table th:last-child{text-align:right;}
+  .bill-table td{border:.5px solid #bbb;padding:5px 8px;}
+  .bill-table td:last-child{text-align:right;font-weight:500;}
+  .bill-table .tr-total{font-weight:700;background:#fafafa;}
+  .words-row{border:.5px solid #bbb;border-top:none;padding:5px 8px;font-size:9px;color:#444;}
+  .meta-row{display:flex;justify-content:space-between;border:.5px solid #bbb;border-top:none;padding:5px 8px;font-size:9px;background:#fafafa;}
+  .sig-strip{display:flex;border:.5px solid #bbb;border-top:none;height:90px;}
+  .qr-cell{width:82px;border-right:.5px solid #bbb;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sig-cell{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:6px;gap:2px;}
+  .sig-cell .slbl{font-size:8.5px;color:#555;}
+  .sig-ph{font-size:8px;color:#ccc;font-style:italic;}
+  .qr-ph{font-size:7.5px;color:#ccc;text-align:center;font-style:italic;line-height:1.5;}
+  .sig-img-el{max-width:115px;max-height:58px;object-fit:contain;display:none;}
+  .qr-img-el{max-width:70px;max-height:70px;object-fit:contain;display:none;}
+
+  /* PRINT */
+  @media print {
+    body{background:#fff;padding:0;}
+    .sidebar{display:none;}
+    h1{display:none;}
+    .app{display:block;}
+    .inv-outer{width:100%;}
+    .inv{box-shadow:none;max-width:100%;}
+    @page{margin:8mm;}
+  }
+</style>
+</head>
+<body>
+
+<h1>⚡ Ecstasys Sunrise Consultants — Invoice Generator</h1>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+
+    <div class="sc">
+      <h3>📝 Invoice Fields</h3>
+      <div class="fr"><label>Date</label><input type="date" id="f-date" value="2026-07-02" oninput="upd()"></div>
+      <div class="fr"><label>Invoice No.</label><input type="text" id="f-invno" value="18/2026" oninput="upd()"></div>
+      <div class="fr"><label>Placement Value (₹)</label><input type="number" id="f-base" value="7700000" oninput="upd()"></div>
+      <div class="fr"><label>Sourcing Fee %</label><input type="number" id="f-feep" value="9" min="0" max="100" step="0.01" oninput="upd()"></div>
+      <div class="fr"><label>GST %</label><input type="number" id="f-gstp" value="18" min="0" max="28" step="0.01" oninput="upd()"></div>
+    </div>
+
+    <!-- HEADER / LOGO UPLOADS -->
+    <div class="sc">
+      <h3>🖼 Header &amp; Logo</h3>
+
+      <div class="fr">
+        <label>Full Header Image</label>
+        <label class="ub" for="hdr-inp">⬆ Upload Header Banner</label>
+        <input type="file" id="hdr-inp" accept="image/*" style="display:none" onchange="loadHeader(this)">
+        <img id="hdr-prev" class="up up-wide" alt="Header preview">
+        <span class="clr" id="clr-hdr" onclick="clearHeader()">✕ Remove — use default</span>
+        <p class="hint">Replaces the entire maroon header. Recommended size: 750 × 80 px.</p>
+      </div>
+
+      <div class="fr" style="margin-top:4px">
+        <label>Logo Image <span style="font-weight:400;color:#bbb;">(left side only)</span></label>
+        <label class="ub" for="logo-inp">⬆ Upload Logo</label>
+        <input type="file" id="logo-inp" accept="image/*" style="display:none" onchange="loadLogo(this)">
+        <img id="logo-prev" class="up" alt="Logo preview">
+        <span class="clr" id="clr-logo" onclick="clearLogo()">✕ Remove — use default</span>
+        <p class="hint">Replaces only the icon+text in the header. Max height ~54 px. PNG with transparent bg works best.</p>
+      </div>
+    </div>
+
+    <!-- FOOTER UPLOAD -->
+    <div class="sc">
+      <h3>📄 Footer</h3>
+      <div class="fr">
+        <label>Full Footer Image</label>
+        <label class="ub" for="ftr-inp">⬆ Upload Footer Banner</label>
+        <input type="file" id="ftr-inp" accept="image/*" style="display:none" onchange="loadFooter(this)">
+        <img id="ftr-prev" class="up up-wide" alt="Footer preview">
+        <span class="clr" id="clr-ftr" onclick="clearFooter()">✕ Remove — use default</span>
+        <p class="hint">Replaces the maroon footer bar + deco strip. Recommended size: 750 × 50 px.</p>
+      </div>
+    </div>
+
+    <!-- SIGNATURE + QR -->
+    <div class="sc">
+      <h3>✍ Signature &amp; QR</h3>
+      <div class="fr">
+        <label>Authorised Signature</label>
+        <label class="ub" for="sig-inp">⬆ Upload Signature</label>
+        <input type="file" id="sig-inp" accept="image/*" style="display:none" onchange="loadImg(this,'sig-prev','sig-inv','sig-ph','clr-sig')">
+        <img id="sig-prev" class="up" alt="Signature preview">
+        <span class="clr" id="clr-sig" onclick="clearImg('sig-prev','sig-inv','sig-ph','clr-sig','sig-inp')">✕ Remove</span>
+      </div>
+      <div class="fr" style="margin-top:6px">
+        <label>QR Code</label>
+        <label class="ub" for="qr-inp">⬆ Upload QR Code</label>
+        <input type="file" id="qr-inp" accept="image/*" style="display:none" onchange="loadImg(this,'qr-prev','qr-inv','qr-ph','clr-qr')">
+        <img id="qr-prev" class="up" alt="QR preview">
+        <span class="clr" id="clr-qr" onclick="clearImg('qr-prev','qr-inv','qr-ph','clr-qr','qr-inp')">✕ Remove</span>
+      </div>
+    </div>
+
+    <button class="pb print" onclick="window.print()">🖨&nbsp; Print / Save as PDF</button>
+    <p class="note">In print dialog choose <strong>"Save as PDF"</strong>.<br>Enable <strong>"Background graphics"</strong><br>for full colour output.</p>
+  </div>
+
+  <!-- ===== INVOICE ===== -->
+  <div class="inv-outer">
+    <div class="inv" id="THE_INV">
+
+      <!-- TOP CORNER DECO (hidden when header image is used) -->
+      <div id="corner-deco" style="position:relative;height:0;overflow:visible;z-index:5;">
+        <svg style="position:absolute;right:0;top:0;width:110px;height:28px;" viewBox="0 0 110 28" preserveAspectRatio="none">
+          <polygon points="45,0 110,0 110,28 78,28" fill="#3b1040" opacity=".5"/>
+          <polygon points="72,0 110,0 110,28 98,28" fill="#6b1a2a" opacity=".55"/>
+        </svg>
+      </div>
+
+      <!-- DEFAULT SVG HEADER -->
+      <div class="inv-head-svg" id="inv-head-svg">
+        <div class="logo-area">
+          <!-- Default SVG logo (shown until logo image uploaded) -->
+          <div class="logo-svg-default" id="logo-svg-default">
+            <svg width="54" height="54" viewBox="0 0 54 54">
+              <circle cx="27" cy="27" r="25" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+              <circle cx="27" cy="27" r="18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(0,27,27)"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(60,27,27)"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(120,27,27)"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(180,27,27)"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(240,27,27)"/>
+              <ellipse cx="27" cy="14" rx="5.5" ry="11" fill="rgba(255,255,255,0.13)" transform="rotate(300,27,27)"/>
+              <circle cx="27" cy="27" r="7" fill="rgba(255,255,255,0.22)"/>
+              <circle cx="27" cy="27" r="3.5" fill="rgba(255,255,255,0.65)"/>
+            </svg>
+            <div>
+              <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:.06em;line-height:1.1;">ECSTASYS</div>
+              <div style="font-size:8.5px;color:#fff;letter-spacing:.14em;opacity:.85;line-height:1.5;">SUNRISE CONSULTANTS</div>
+              <div style="font-size:6.5px;color:#fff;letter-spacing:.1em;opacity:.6;">THINK STAFFING THINK DIFFERENT</div>
+            </div>
+          </div>
+          <!-- Logo image replaces above -->
+          <img id="logo-img-inv" class="logo-img-el" alt="Logo">
+        </div>
+        <div class="contact-right">
+          <div><span class="lbl">Phone:</span>+91-99880-04842</div>
+          <div><span class="lbl">Web:</span>Kavita.k.gupta@gmail.com</div>
+        </div>
+        <!-- diagonal stripes -->
+        <svg style="position:absolute;right:0;top:0;height:100%;width:75px;z-index:1;" viewBox="0 0 75 74" preserveAspectRatio="none">
+          <polygon points="32,0 75,0 75,74 62,74" fill="rgba(255,255,255,0.06)"/>
+          <polygon points="54,0 75,0 75,74 68,74" fill="rgba(255,255,255,0.04)"/>
+        </svg>
+      </div>
+
+      <!-- FULL HEADER IMAGE (replaces svg header) -->
+      <div class="inv-head-img" id="inv-head-img">
+        <img id="hdr-inv-img" alt="Header" style="width:100%;display:block;">
+      </div>
+
+      <div class="inv-redline" id="inv-redline"></div>
+
+      <!-- BODY -->
+      <div class="inv-body">
+        <div class="inv-title-row">INVOICE</div>
+
+        <div class="inv-main">
+          <div class="inv-to">
+            <div class="to-head">To,</div>
+            IDFC First Bank Limited<br>
+            Floor No.: G BLOCK Building No./Flat No.:<br>
+            C-61 Name Of Premises/Building: IDFC<br>
+            FIRST Bank Tower, THE SQUARE<br>
+            Road/Street: BANDRA KURLA COMPLEX<br>
+            City/Town/Village: Mumbai District:<br>
+            Mumbai Suburban State: Maharashtra PIN<br>
+            Code: 400051<br><br>
+            27AADCI6523Q1Z2
+          </div>
+          <table class="inv-dtable">
+            <tr><td>DATE</td><td id="d-date">2-Jul-2026</td></tr>
+            <tr><td>INVOICE NO.</td><td id="d-invno">18/2026</td></tr>
+            <tr><td>CONTACT PERSON</td><td>Nishant Gokhale / Anagha Deshpande</td></tr>
+            <tr><td>Consultant Address</td><td>H NO 40 Mohalla no 28 Jalandhar Cantt 144005</td></tr>
+            <tr><td>Bank Details</td><td>IDFC Bank Jalandhar</td></tr>
+            <tr><td>Current A/c No.</td><td>59990027277</td></tr>
+            <tr><td>IFSC Code</td><td>IDFB0021191</td></tr>
+            <tr><td>SAC Code</td><td></td></tr>
+          </table>
+        </div>
+
+        <div class="section-head">PLACEMENT DETAILS / BILL DETAILS</div>
+        <table class="bill-table">
+          <tr><th style="width:72%">PARTICULARS</th><th>AMOUNT (Rs.)</th></tr>
+          <tr>
+            <td><strong>Sourcing Fee <span id="d-feep">9</span>%</strong></td>
+            <td id="d-fee">6,93,000</td>
+          </tr>
+          <tr>
+            <td>IGST(<span id="d-gstlbl">18</span>%)</td>
+            <td id="d-gst">1,24,740</td>
+          </tr>
+          <tr class="tr-total">
+            <td>TOTAL AMOUNT</td>
+            <td id="d-total">8,17,740</td>
+          </tr>
+        </table>
+        <div class="words-row"><strong>Amount in word: </strong><span id="d-words">Eight Lakh Seventeen Thousand Seven Hundred Forty Only</span></div>
+        <div class="meta-row">
+          <span>GST NO. : <strong>03AJLPG2668L1Z0</strong></span>
+          <span>PAN NO.: <strong>AJLPG2668L</strong></span>
+        </div>
+        <div class="meta-row" style="border-top:none;">
+          <span>MSME NO: <strong>UDYAM-PB-10-0070675</strong></span>
+        </div>
+        <div class="meta-row" style="border-top:none;">
+          <span>Service Tax Category: <strong>Manpower Recruitment Agency</strong></span>
+        </div>
+
+        <!-- Signature + QR strip -->
+        <div class="sig-strip">
+          <div class="qr-cell">
+            <img id="qr-inv" class="qr-img-el" alt="QR Code">
+            <span class="qr-ph" id="qr-ph">QR<br>Code</span>
+          </div>
+          <div class="sig-cell">
+            <img id="sig-inv" class="sig-img-el" alt="Signature">
+            <span class="sig-ph" id="sig-ph">Signature</span>
+            <div class="slbl">Authorised Signatory</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEFAULT SVG FOOTER -->
+      <div class="inv-footer-svg" id="inv-footer-svg">
+        <span>
+          <svg width="11" height="14" viewBox="0 0 11 14" fill="none"><path d="M5.5 0C3 0 1 2 1 4.5C1 8 5.5 14 5.5 14S10 8 10 4.5C10 2 8 0 5.5 0ZM5.5 6.5C4.4 6.5 3.5 5.6 3.5 4.5S4.4 2.5 5.5 2.5 7.5 3.4 7.5 4.5 6.6 6.5 5.5 6.5Z" fill="white"/></svg>
+          Jalandhar Cantt. Punjab
+        </span>
+        <span>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 1C1.4 1 1 1.4 1 2v2C1 8.4 4.6 12 9 12h2c.6 0 1-.4 1-1V9.4c0-.4-.3-.7-.7-.8L9 8.1c-.4-.1-.8.1-1 .4L7.2 9.8C5.8 9.1 4.9 8.2 4.2 6.8L5.5 6c.3-.2.5-.6.4-1L5.4 2.7C5.3 2.3 5 2 4.6 2H2z" fill="white"/></svg>
+          +91-99880-04842
+        </span>
+        <span>
+          <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><rect x="1" y="1" width="12" height="8" rx="1.5" stroke="white" stroke-width="1.2"/><path d="M1 2l6 4 6-4" stroke="white" stroke-width="1.2"/></svg>
+          Kavita.k.gupta@gmail.com
+        </span>
+      </div>
+      <div class="inv-bot-deco" id="inv-bot-deco">
+        <svg style="position:absolute;left:0;bottom:0;height:22px;width:130px;" viewBox="0 0 130 22" preserveAspectRatio="none">
+          <polygon points="0,22 0,0 46,0 18,22" fill="rgba(0,0,0,0.22)"/>
+          <polygon points="0,22 0,0 22,0 4,22" fill="rgba(0,0,0,0.16)"/>
+        </svg>
+        <svg style="position:absolute;right:0;bottom:0;height:22px;width:130px;" viewBox="0 0 130 22" preserveAspectRatio="none">
+          <polygon points="130,22 130,0 84,0 112,22" fill="rgba(0,0,0,0.22)"/>
+          <polygon points="130,22 130,0 108,0 126,22" fill="rgba(0,0,0,0.16)"/>
+        </svg>
+      </div>
+
+      <!-- FULL FOOTER IMAGE (replaces svg footer + deco) -->
+      <div class="inv-footer-img" id="inv-footer-img">
+        <img id="ftr-inv-img" alt="Footer" style="width:100%;display:block;">
+      </div>
+
+    </div><!-- /inv -->
+  </div><!-- /inv-outer -->
+</div><!-- /app -->
+
+<script>
+/* ---- words ---- */
+const O=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+  'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const T=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function nw(n){
+  n=Math.round(n); if(!n)return 'Zero'; let s='';
+  if(n>=10000000){s+=nw(Math.floor(n/10000000))+' Crore ';n%=10000000;}
+  if(n>=100000){s+=nw(Math.floor(n/100000))+' Lakh ';n%=100000;}
+  if(n>=1000){s+=nw(Math.floor(n/1000))+' Thousand ';n%=1000;}
+  if(n>=100){s+=O[Math.floor(n/100)]+' Hundred ';n%=100;}
+  if(n>=20){s+=T[Math.floor(n/10)]+' ';n%=10;}
+  if(n>0)s+=O[n]+' '; return s.trim();
+}
+function fmtD(v){
+  if(!v)return '';
+  const d=new Date(v+'T00:00:00');
+  return d.getDate()+'-'+d.toLocaleString('en-GB',{month:'short'})+'-'+d.getFullYear();
+}
+function inr(n){return Math.round(n).toLocaleString('en-IN');}
+
+function upd(){
+  const base=parseFloat(document.getElementById('f-base').value)||0;
+  const feep=parseFloat(document.getElementById('f-feep').value)||0;
+  const gstp=parseFloat(document.getElementById('f-gstp').value)||0;
+  const fee=Math.round(base*feep/100);
+  const gst=Math.round(fee*gstp/100);
+  const total=fee+gst;
+  document.getElementById('d-date').textContent=fmtD(document.getElementById('f-date').value);
+  document.getElementById('d-invno').textContent=document.getElementById('f-invno').value;
+  document.getElementById('d-feep').textContent=feep;
+  document.getElementById('d-gstlbl').textContent=gstp;
+  document.getElementById('d-fee').textContent=inr(fee);
+  document.getElementById('d-gst').textContent=inr(gst);
+  document.getElementById('d-total').textContent=inr(total);
+  document.getElementById('d-words').textContent=nw(total)+' Only';
+}
+
+/* ---- generic image loader ---- */
+function loadImg(inp,prevId,invId,phId,clrId){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    const src=e.target.result;
+    const pv=document.getElementById(prevId); pv.src=src; pv.style.display='block';
+    const iv=document.getElementById(invId);  iv.src=src; iv.style.display='block';
+    document.getElementById(phId).style.display='none';
+    document.getElementById(clrId).style.display='block';
+  };
+  r.readAsDataURL(f);
+}
+function clearImg(prevId,invId,phId,clrId,inpId){
+  ['src',''].forEach(()=>{});
+  document.getElementById(prevId).style.display='none'; document.getElementById(prevId).src='';
+  document.getElementById(invId).style.display='none';  document.getElementById(invId).src='';
+  document.getElementById(phId).style.display='';
+  document.getElementById(clrId).style.display='none';
+  document.getElementById(inpId).value='';
+}
+
+/* ---- FULL HEADER image ---- */
+function loadHeader(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    const src=e.target.result;
+    // show preview
+    const pv=document.getElementById('hdr-prev'); pv.src=src; pv.style.display='block';
+    document.getElementById('clr-hdr').style.display='block';
+    // swap invoice header
+    document.getElementById('hdr-inv-img').src=src;
+    document.getElementById('inv-head-svg').style.display='none';
+    document.getElementById('inv-head-img').style.display='block';
+    document.getElementById('corner-deco').style.display='none';
+    document.getElementById('inv-redline').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+function clearHeader(){
+  document.getElementById('hdr-prev').style.display='none'; document.getElementById('hdr-prev').src='';
+  document.getElementById('clr-hdr').style.display='none';
+  document.getElementById('hdr-inp').value='';
+  document.getElementById('inv-head-svg').style.display='';
+  document.getElementById('inv-head-img').style.display='none';
+  document.getElementById('corner-deco').style.display='';
+  document.getElementById('inv-redline').style.display='';
+}
+
+/* ---- LOGO only (within SVG header) ---- */
+function loadLogo(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    const src=e.target.result;
+    const pv=document.getElementById('logo-prev'); pv.src=src; pv.style.display='block';
+    document.getElementById('clr-logo').style.display='block';
+    document.getElementById('logo-img-inv').src=src;
+    document.getElementById('logo-img-inv').style.display='block';
+    document.getElementById('logo-svg-default').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+function clearLogo(){
+  document.getElementById('logo-prev').style.display='none'; document.getElementById('logo-prev').src='';
+  document.getElementById('clr-logo').style.display='none';
+  document.getElementById('logo-inp').value='';
+  document.getElementById('logo-img-inv').style.display='none'; document.getElementById('logo-img-inv').src='';
+  document.getElementById('logo-svg-default').style.display='flex';
+}
+
+/* ---- FULL FOOTER image ---- */
+function loadFooter(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=function(e){
+    const src=e.target.result;
+    const pv=document.getElementById('ftr-prev'); pv.src=src; pv.style.display='block';
+    document.getElementById('clr-ftr').style.display='block';
+    document.getElementById('ftr-inv-img').src=src;
+    document.getElementById('inv-footer-svg').style.display='none';
+    document.getElementById('inv-bot-deco').style.display='none';
+    document.getElementById('inv-footer-img').style.display='block';
+  };
+  r.readAsDataURL(f);
+}
+function clearFooter(){
+  document.getElementById('ftr-prev').style.display='none'; document.getElementById('ftr-prev').src='';
+  document.getElementById('clr-ftr').style.display='none';
+  document.getElementById('ftr-inp').value='';
+  document.getElementById('inv-footer-svg').style.display='';
+  document.getElementById('inv-bot-deco').style.display='';
+  document.getElementById('inv-footer-img').style.display='none';
+}
+
+upd();
+</script>
+</body>
+</html>
