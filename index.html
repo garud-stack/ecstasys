@@ -7,7 +7,7 @@
 <title>Ecstasys Invoice Generator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,Helvetica,sans-serif;background:#e8e8e8;min-height:100vh;padding:18px;}
+body{font-family:Arial,Helvetica,sans-serif;background:#e8e8e8;min-height:100vh;padding:0;}
 h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:center;letter-spacing:.04em;}
 .app{display:-webkit-flex;display:flex;gap:20px;max-width:1080px;margin:0 auto;-webkit-align-items:flex-start;align-items:flex-start;}
 
@@ -105,7 +105,6 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
 @media print{
   #lockscreen{display:none !important;}
   #mainapp{display:block !important;}
-}
   body{background:#fff !important;padding:0 !important;}
   .sidebar{display:none !important;}
   h1{display:none !important;}
@@ -414,6 +413,7 @@ function checkCode() {
   if (entered === PASSCODE) {
     document.getElementById('lockscreen').style.display = 'none';
     document.getElementById('mainapp').style.display = 'block';
+    document.getElementById('mainapp').style.padding = '18px';
     upd();
   } else {
     attempts++;
