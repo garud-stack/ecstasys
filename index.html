@@ -178,6 +178,14 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
     <div class="fr"><label>Sourcing Fee %</label><input type="number" id="f-feep" value="9" min="0" max="100" step="0.01" oninput="upd()"></div>
     <div class="fr"><label>GST %</label><input type="number" id="f-gstp" value="18" min="0" max="28" step="0.01" oninput="upd()"></div>
     <div class="fr"><label>Client GST No.</label><input type="text" id="f-cgst" value="27AADCI6523Q1Z2" oninput="upd()"></div>
+    <div class="fr"><label>Client Address</label><textarea id="f-addr" oninput="upd()" style="width:100%;font-size:12px;padding:5px 7px;border-radius:5px;border:1px solid #ccc;background:#fafafa;color:#222;outline:none;resize:vertical;min-height:90px;font-family:inherit;">IDFC First Bank Limited
+Floor No.: G BLOCK Building No./Flat No.:
+C-61 Name Of Premises/Building: IDFC
+FIRST Bank Tower, THE SQUARE
+Road/Street: BANDRA KURLA COMPLEX
+City/Town/Village: Mumbai District:
+Mumbai Suburban State: Maharashtra PIN
+Code: 400051</textarea></div>
   </div>
 
   <div class="sc">
@@ -293,14 +301,7 @@ h1{font-size:14px;font-weight:700;margin-bottom:14px;color:#333;text-align:cente
     <div class="inv-main">
       <div class="inv-to">
         <div class="th">To,</div>
-        IDFC First Bank Limited<br>
-        Floor No.: G BLOCK Building No./Flat No.:<br>
-        C-61 Name Of Premises/Building: IDFC<br>
-        FIRST Bank Tower, THE SQUARE<br>
-        Road/Street: BANDRA KURLA COMPLEX<br>
-        City/Town/Village: Mumbai District:<br>
-        Mumbai Suburban State: Maharashtra PIN<br>
-        Code: 400051<br><br>
+        <span id="d-addr" style="white-space:pre-line;"></span><br><br>
         <span id="d-cgst">27AADCI6523Q1Z2</span>
       </div>
       <table class="dtable">
@@ -475,6 +476,9 @@ function inr(n){
   rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,',');
   return rest+','+last3;
 }
+function escHTML(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 function upd(){
   var base=parseFloat(document.getElementById('f-base').value)||0;
   var feep=parseFloat(document.getElementById('f-feep').value)||0;
@@ -485,6 +489,7 @@ function upd(){
   document.getElementById('d-date').innerHTML=fmtD(document.getElementById('f-date').value);
   document.getElementById('d-invno').innerHTML=document.getElementById('f-invno').value;
   document.getElementById('d-cgst').innerHTML=document.getElementById('f-cgst').value;
+  document.getElementById('d-addr').innerHTML=escHTML(document.getElementById('f-addr').value);
   document.getElementById('d-feep').innerHTML=feep;
   document.getElementById('d-gstlbl').innerHTML=gstp;
   document.getElementById('d-fee').innerHTML=inr(fee);
